@@ -1,0 +1,11 @@
+flask
+pandas
+langchain
+langchain-community
+langchain-huggingface
+langchain-groq
+langchainhub
+python-dotenv
+faiss-cpu
+sentence-transformers
+PyMuPDF

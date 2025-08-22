@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>🌾 किसान सहायक</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url("/static/bg1.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            color: white;
+            position: relative;
+        }
+        
+        a {
+           color: white;
+           text-decoration: underline;
+        }
+
+        a:hover {
+        color: #ffeb3b;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 60, 0, 0.6);
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            padding: 40px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h2 {
+            background-color: rgba(0, 100, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 30px;
+            font-size: 26px;
+        }
+
+        #queryForm {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #queryInput {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            padding: 14px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: #43a047;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #2e7d32;
+        }
+
+        #loading {
+            display: none;
+            font-weight: bold;
+            color: #ffeb3b;
+            margin-top: 20px;
+        }
+
+        #resultArea {
+            margin-top: 30px;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 17px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+
+    <div class="container">
+        <h2>🌾 किसान प्रश्न पूछें</h2>
+
+        <form id="queryForm">
+            <input type="text" id="queryInput" placeholder="अपना प्रश्न दर्ज करें..." required>
+            <button type="submit">भेजें</button>
+        </form>
+
+         <div style="text-align: center; margin-top: 10px;">
+            <button onclick="startDictation()">🎤 बोलें</button>
+            <button onclick="readAloud()">🔊 सुनें</button>
+            <button onclick="stopReading()">⏹ रोकें</button>
+       </div>
+
+        <div id="loading">⏳ कृपया प्रतीक्षा करें... उत्तर तैयार किया जा रहा है...</div>
+        <pre id="resultArea"></pre>
+    </div>
+
+<script>
+    const form = document.getElementById('queryForm');
+    const resultArea = document.getElementById('resultArea');
+    const loading = document.getElementById('loading');
+
+    function makeLinksClickable(text) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, url =>
+            `<a href="${url}" target="_blank" style="color: yellow;">${url}</a>`
+        );
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = document.getElementById('queryInput').value.trim();
+        if (!query) return;
+
+        loading.style.display = 'block';
+        resultArea.innerHTML = "";
+
+        try {
+            const res = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+
+            const data = await res.json();
+            const formatted = makeLinksClickable(data.result || data.error || "⚠️ उत्तर प्राप्त नहीं हो सका।");
+            resultArea.innerHTML = formatted;
+            window.lastSpokenText = data.result || data.error || "उत्तर प्राप्त नहीं हो सका।";
+
+        } catch (err) {
+            resultArea.innerHTML = "⚠️ कुछ त्रुटि हुई है। कृपया पुनः प्रयास करें।";
+        } finally {
+            loading.style.display = 'none';
+        }
+    });
+
+    // VOICE INPUT
+    function startDictation() {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('आपका ब्राउज़र वॉइस टाइपिंग को सपोर्ट नहीं करता।');
+            return;
+        }
+
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'hi-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('queryInput').value = transcript;
+            document.getElementById('queryForm').requestSubmit();
+        };
+
+        recognition.onerror = function (event) {
+            alert('🎤 वॉइस इनपुट में समस्या आई: ' + event.error);
+        };
+    }
+
+    // TEXT-TO-SPEECH
+    function readAloud() {
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+    }
+
+    const text = window.lastSpokenText || resultArea.textContent;
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+
+    const isHindi = /[\u0900-\u097F]/.test(text);
+    utterance.lang = isHindi ? 'hi-IN' : 'en-US';
+    utterance.voice = voices.find(v => v.lang === utterance.lang);
+
+    console.log("Reading Text:", text);
+    console.log("Language:", utterance.lang, "Voice:", utterance.voice?.name);
+
+    speechSynthesis.speak(utterance);
+}
+
+function stopReading() {
+    speechSynthesis.cancel();
+}
+
+</script>
+
+
+
+</body>
+</html>
