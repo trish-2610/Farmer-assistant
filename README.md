@@ -1,6 +1,6 @@
 # 🌾 Farmer Assistant AI  
 
-![Farmer Assistant Screenshot](templates/bg.png)
+![Farmer Assistant Screenshot](templates/chabot_image.png)
 
 ## 📌 Project Overview  
 Farmer Assistant AI is an intelligent web application built using **LangChain** and **Flask** that helps farmers ask questions in **Hindi** or **English** and get instant answers.  
@@ -35,16 +35,18 @@ This project aims to assist farmers with agricultural queries in their own langu
 ---
 
 ## 📂 Project Structure  
-📦 Farmer-Assistant-AI
-│── app.py # Flask backend
-│── model.py # LangChain retriever + LLM for answers
-│── templates/
-│ └── index.html # Main UI
-│── static/
-│ └── bg.png # Background image
-│── README.md # Project documentation
-│── requirements.txt # Python dependencies
-
+Farmer-Assistant-AI/
+├── app.py             # Flask backend (routes & API)
+├── model.py           # LangChain retriever + LLM (core logic)
+│
+├── templates/         # HTML templates  
+│   └── index.html     # Main UI (multilingual + speech features)
+│
+├── static/            # Static assets  
+│   └── bg.png         # Background image
+│
+├── requirements.txt   # Python dependencies
+└── README.md          # Project documentation
 
 ---
 
@@ -60,12 +62,6 @@ This project aims to assist farmers with agricultural queries in their own langu
 
 ---
 
-## 📸 Demo Screenshot  
-Here’s how it looks in action:  
-
-![Farmer Assistant Screenshot](images/screenshot.png)  
-
----
 
 ## 🌱 Future Improvements  
 - Add support for more regional languages  
