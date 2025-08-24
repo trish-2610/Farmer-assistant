@@ -1,6 +1,6 @@
 # 🌾 Farmer Assistant AI  
 
-![Farmer Assistant Screenshot](templates/chabot_image.png)
+![Farmer Assistant Screenshot](templates/chatbot_image.png)
 
 ## 📌 Project Overview  
 Farmer Assistant AI is an intelligent web application built using **LangChain** and **Flask** that helps farmers ask questions in **Hindi** or **English** and get instant answers.  
